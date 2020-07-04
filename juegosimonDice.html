@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Simon Dice</title>
+    <style>
+      body {
+        margin: 0;
+        background: #6d6c75;
+        display: flex;
+        align-items: center;
+        height: 100vh;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .numeronivel {
+        position: fixed;
+        float: right;
+        text-align: center;
+        margin-right: 42px;
+      }
+
+      .gameboard {
+        height: 100vh;
+        width: 100vh;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        max-height: 60vh;
+        max-width: 60vh;
+      }
+
+      .color {
+        width: 50%;
+        height: 50%;
+        display: inline-block;
+      }
+
+      .left {
+        float: left;
+      }
+
+      .right {
+        float: left;
+      }
+
+      .celeste {
+        background: #22a6b3;
+      }
+
+      .celeste.light {
+        background: #7ed6df;
+      }
+
+      .violeta {
+        background: #be2edd;
+      }
+
+      .violeta.light {
+        background: #e056fd;
+      }
+
+      .naranja {
+        background: #f0932b;
+      }
+
+      .naranja.light {
+        background: #ffbe76;
+      }
+
+      .verde {
+        background: #6ab04c;
+      }
+
+      .verde.light {
+        background: #badc58;
+      }
+
+      .btn-start {
+        width: 400px;
+        height: 100px;
+        background: #ecf0f1;
+        color: #2c3e50;
+        font-size: 2.5rem;
+        position: absolute;
+        top: calc(50% - 50px);
+        left: calc(50% - 200px);
+      }
+
+      .hide {
+        display: none;
+      }
+
+      * {
+        font-family: Arial;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div><h1 class="numeronivel" id="nivel">Nivel: 0</h1></div>
+    </header>
+    <div class="gameboard">
+      <div id="celeste" class="color celeste left" data-color="celeste"></div>
+      <div id="violeta" class="color violeta right" data-color="violeta"></div>
+      <div id="naranja" class="color naranja left" data-color="naranja"></div>
+      <div id="verde" class="color verde right" data-color="verde"></div>
+      <button id="btnEmpezar" class="btn-start" onclick="empezarJuego()">
+        Empezar a jugar!
+      </button>
+    </div>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script> -->
+    <script src="sweetalert.min.js"></script>
+    <script>
+      const nivelup = document.getElementById("nivel");
+      const celeste = document.getElementById("celeste");
+      const violeta = document.getElementById("violeta");
+      const naranja = document.getElementById("naranja");
+      const verde = document.getElementById("verde");
+      const btnEmpezar = document.getElementById("btnEmpezar");
+      const ULTIMO_NIVEL = 4;
+
+      // swal('Hola')
+
+      class Juego {
+        constructor() {
+          this.inicializar();
+          this.generarsecuencia();
+          setTimeout(this.siguientenivel, 500);
+        }
+
+        inicializar() {
+          this.siguientenivel = this.siguientenivel.bind(this);
+          this.elegircolor = this.elegircolor.bind(this);
+          this.toggleBtnEmpezar();
+          this.nivel = 1;
+          this.colores = {
+            celeste,
+            violeta,
+            naranja,
+            verde,
+          };
+        }
+
+        toggleBtnEmpezar() {
+          if (btnEmpezar.classList.contains("hide")) {
+            btnEmpezar.classList.remove("hide");
+          } else {
+            btnEmpezar.classList.add("hide");
+          }
+        }
+
+        // Generar array de numeros aleatorios entre 0 y 3 math.floor hace que los numeros sean enteros
+        generarsecuencia() {
+          this.secuencia = new Array(ULTIMO_NIVEL)
+            .fill(0)
+            .map((n) => Math.floor(Math.random() * 4));
+        }
+
+        siguientenivel() {
+          nivelup.innerHTML = `Nivel: ${this.nivel}`;
+          this.subnivel = 0;
+          this.iluminarsecuencia();
+          this.agregareventosclick();
+        }
+
+        transformarnumeroacolor(numero) {
+          switch (numero) {
+            case 0:
+              return "celeste";
+            case 1:
+              return "violeta";
+            case 2:
+              return "naranja";
+            case 3:
+              return "verde";
+          }
+        }
+
+        transformarcoloranumero(color) {
+          switch (color) {
+            case "celeste":
+              return 0;
+            case "violeta":
+              return 1;
+            case "naranja":
+              return 2;
+            case "verde":
+              return 3;
+          }
+        }
+
+        iluminarsecuencia() {
+          for (var i = 0; i < this.nivel; i++) {
+            let color = this.transformarnumeroacolor(this.secuencia[i]);
+            setTimeout(() => this.iluminarcolor(color), 1000 * i);
+          }
+        }
+
+        iluminarcolor(color) {
+          this.colores[color].classList.add("light");
+          setTimeout(() => this.apagarcolor(color), 350);
+        }
+
+        apagarcolor(color) {
+          this.colores[color].classList.remove("light");
+        }
+
+        agregareventosclick() {
+          this.colores.celeste.addEventListener("click", this.elegircolor);
+          this.colores.violeta.addEventListener("click", this.elegircolor);
+          this.colores.naranja.addEventListener("click", this.elegircolor);
+          this.colores.verde.addEventListener("click", this.elegircolor);
+        }
+
+        eliminareventosclick() {
+          this.colores.celeste.removeEventListener("click", this.elegircolor);
+          this.colores.violeta.removeEventListener("click", this.elegircolor);
+          this.colores.naranja.removeEventListener("click", this.elegircolor);
+          this.colores.verde.removeEventListener("click", this.elegircolor);
+        }
+
+        elegircolor(este) {
+          const nombrecolor = este.target.dataset.color;
+          const numerocolor = this.transformarcoloranumero(nombrecolor);
+          this.iluminarcolor(nombrecolor);
+          if (numerocolor === this.secuencia[this.subnivel]) {
+            this.subnivel++;
+            if (this.subnivel === this.nivel) {
+              this.nivel++;
+              this.eliminareventosclick();
+              if (this.nivel === ULTIMO_NIVEL + 1) {
+                // GANO
+                this.ganoeljuego();
+              } else {
+                setTimeout(this.siguientenivel, 1500);
+              }
+            }
+          } else {
+            // Perdio
+            this.perdioeljuego();
+          }
+        }
+
+        ganoeljuego() {
+          swal("Platzi", "Felicitaciones Ganaste el Juego!", "success").then(
+            () => {
+              this.inicializar();
+            }
+          );
+        }
+
+        perdioeljuego() {
+          swal("Platzi", "Lo Lamentamos Perdiste!", "error").then(() => {
+            this.eliminareventosclick();
+            this.inicializar();
+          });
+        }
+      }
+
+      function empezarJuego() {
+        window.juego = new Juego();
+      }
+    </script>
+  </body>
+</html>
